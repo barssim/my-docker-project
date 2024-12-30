@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  react-app:
+    image: mywork-react-app # Replace with your React app's image name
+    build:
+      context: /home/ahmed-ubuntu/git/react/auto-parts-shop
+      dockerfile: Dockerfile # Dockerfile used to build the React app
+    ports:
+      - "3000:80" # Map container port 3000 to host port 3000
+    networks:
+      - app-network        
+  
+  solide_api_gateway:
+    image: solide_api_gateway_image
+    container_name: solide_api_gateway
+    build:
+      context: /home/ahmed-ubuntu/git/solide_api_gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8085"
+    networks:
+      - app-network
+      
+  usermanagement:
+    image: usermanagement_image
+    container_name: usermanagement
+    build:
+      context: /home/ahmed-ubuntu/git/usermanagement
+      dockerfile: Dockerfile
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/userDB
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=Tasnim2017#
+    ports:
+      - "8091:8091"
+    depends_on:
+      - mysql-db
+    networks:
+      - app-network
+
+  articlediscover:
+    image: articlediscover_image
+    container_name: articlediscover
+    build:
+      context: /home/ahmed-ubuntu/git/articleDiscover
+      dockerfile: Dockerfile
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/tola
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=Tasnim2017#
+    ports:
+      - "8090:8090"
+    depends_on:
+      - mysql-db
+    networks:
+      - app-network
+
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: Tasnim2017#
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+    networks:
+      - app-network
+
+
+networks:
+  app-network:
+    driver: bridge
+    
+
+volumes:
+  db-data:
